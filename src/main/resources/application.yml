@@ -1,3 +1,10 @@
 spring:
   application:
     name: SeatLock
+  profiles:
+    default: local
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
