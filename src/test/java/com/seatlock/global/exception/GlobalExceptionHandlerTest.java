@@ -1,12 +1,14 @@
 package com.seatlock.global.exception;
 
-import com.seatlock.global.config.SecurityConfig;
+import com.seatlock.global.security.JwtAuthenticationEntryPoint;
+import com.seatlock.global.security.JwtTokenProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -14,12 +16,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+// 핸들러 계약(예외 → 공통 응답 변환)만 검증 — 필터(Security·MDC Logging)는 제외. traceId는 통합 테스트에서 검증
 @WebMvcTest(controllers = ExceptionTestController.class)
-@Import(SecurityConfig.class)
+@AutoConfigureMockMvc(addFilters = false)
 class GlobalExceptionHandlerTest {
 
     @Autowired
     MockMvc mockMvc;
+
+    // @WebMvcTest가 Filter 빈(JwtAuthenticationFilter)을 포함해서 그 의존성만 mock으로 충족
+    @MockitoBean
+    JwtTokenProvider jwtTokenProvider;
+
+    @MockitoBean
+    JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Test
     @DisplayName("BusinessException은 ErrorCode의 상태코드와 공통 에러 포맷으로 변환된다")
@@ -28,7 +38,6 @@ class GlobalExceptionHandlerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.error.code").value("NOT_FOUND"))
-                .andExpect(jsonPath("$.error.traceId").exists())
                 .andExpect(jsonPath("$.data").doesNotExist());
     }
 
