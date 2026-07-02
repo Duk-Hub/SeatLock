@@ -41,3 +41,4 @@ jobs:
           MYSQL_DATABASE: seatlock
           MYSQL_USER: seatlock
           MYSQL_PASSWORD: seatlock
+          JWT_SECRET: Y2ktb25seS1zZWNyZXQtY2ktb25seS1zZWNyZXQtMTI=
