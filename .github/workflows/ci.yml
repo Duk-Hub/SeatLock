@@ -9,22 +9,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:8.4
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: seatlock
-          MYSQL_USER: seatlock
-          MYSQL_PASSWORD: seatlock
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     steps:
       - uses: actions/checkout@v4
 
@@ -37,8 +21,3 @@ jobs:
 
       - name: Build & Test
         run: ./gradlew build
-        env:
-          MYSQL_DATABASE: seatlock
-          MYSQL_USER: seatlock
-          MYSQL_PASSWORD: seatlock
-          JWT_SECRET: Y2ktb25seS1zZWNyZXQtY2ktb25seS1zZWNyZXQtMTI=
