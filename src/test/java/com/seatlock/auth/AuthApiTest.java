@@ -1,10 +1,9 @@
 package com.seatlock.auth;
 
+import com.seatlock.IntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -17,8 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // Flyway 시드(V3: user1~3@seatlock.com / password123!) 기반 인증 통합 테스트
-@SpringBootTest
-@AutoConfigureMockMvc
+@IntegrationTest
 class AuthApiTest {
 
     @Autowired

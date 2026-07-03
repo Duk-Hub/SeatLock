@@ -1,0 +1,3 @@
+jwt:
+  secret: dGVzdC1vbmx5LXNlY3JldC1kby1ub3QtdXNlLWluLXByb2R1Y3Rpb24=
+  expiration: 60m
