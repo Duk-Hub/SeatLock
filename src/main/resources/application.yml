@@ -9,6 +9,14 @@ spring:
   flyway:
     enabled: true
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui
+    tags-sorter: alpha
+    operations-sorter: alpha
+
 jwt:
   secret: ${JWT_SECRET}
   expiration: 60m
