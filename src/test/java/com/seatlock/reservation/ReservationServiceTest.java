@@ -62,7 +62,7 @@ class ReservationServiceTest {
         Schedule schedule = scheduleWithId(1L);
         ScheduleSeat seat1 = scheduleSeat(11L, schedule, ScheduleSeatStatus.AVAILABLE, 150000);
         ScheduleSeat seat2 = scheduleSeat(12L, schedule, ScheduleSeatStatus.AVAILABLE, 120000);
-        given(scheduleSeatRepository.findAllById(List.of(11L, 12L))).willReturn(List.of(seat1, seat2));
+        given(scheduleSeatRepository.findAllByIdForUpdate(List.of(11L, 12L))).willReturn(List.of(seat1, seat2));
         given(memberRepository.getReferenceById(MEMBER_ID)).willReturn(mock(Member.class));
         given(reservationRepository.save(any(Reservation.class))).willAnswer(invocation -> {
             Reservation reservation = invocation.getArgument(0);
@@ -91,7 +91,7 @@ class ReservationServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .extracting(e -> ((BusinessException) e).getErrorCode())
                 .isEqualTo(ErrorCode.INVALID_INPUT);
-        verify(scheduleSeatRepository, never()).findAllById(anyList());
+        verify(scheduleSeatRepository, never()).findAllByIdForUpdate(anyList());
     }
 
     @Test
@@ -99,7 +99,7 @@ class ReservationServiceTest {
     void seatNotFound() {
         // given — 2개를 요청했지만 1개만 조회됨
         Schedule schedule = scheduleWithId(1L);
-        given(scheduleSeatRepository.findAllById(List.of(11L, 999L)))
+        given(scheduleSeatRepository.findAllByIdForUpdate(List.of(11L, 999L)))
                 .willReturn(List.of(scheduleSeat(11L, schedule, ScheduleSeatStatus.AVAILABLE, 150000)));
 
         // when & then
@@ -115,7 +115,7 @@ class ReservationServiceTest {
         // given
         ScheduleSeat seat1 = scheduleSeat(11L, scheduleWithId(1L), ScheduleSeatStatus.AVAILABLE, 150000);
         ScheduleSeat seat2 = scheduleSeat(12L, scheduleWithId(2L), ScheduleSeatStatus.AVAILABLE, 150000);
-        given(scheduleSeatRepository.findAllById(List.of(11L, 12L))).willReturn(List.of(seat1, seat2));
+        given(scheduleSeatRepository.findAllByIdForUpdate(List.of(11L, 12L))).willReturn(List.of(seat1, seat2));
 
         // when & then
         assertThatThrownBy(() -> reservationService.reserve(MEMBER_ID, new ReservationCreateRequest(List.of(11L, 12L))))
@@ -132,7 +132,7 @@ class ReservationServiceTest {
         Schedule schedule = scheduleWithId(1L);
         ScheduleSeat available = scheduleSeat(11L, schedule, ScheduleSeatStatus.AVAILABLE, 150000);
         ScheduleSeat reserved = scheduleSeat(12L, schedule, ScheduleSeatStatus.RESERVED, 150000);
-        given(scheduleSeatRepository.findAllById(List.of(11L, 12L))).willReturn(List.of(available, reserved));
+        given(scheduleSeatRepository.findAllByIdForUpdate(List.of(11L, 12L))).willReturn(List.of(available, reserved));
 
         // when & then
         assertThatThrownBy(() -> reservationService.reserve(MEMBER_ID, new ReservationCreateRequest(List.of(11L, 12L))))

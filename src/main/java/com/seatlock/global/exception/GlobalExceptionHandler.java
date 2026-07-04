@@ -5,6 +5,7 @@ import com.seatlock.global.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -31,6 +32,12 @@ public class GlobalExceptionHandler {
                 .toList();
         log.info("Validation failed: {} {} {}", request.getMethod(), request.getRequestURI(), fieldErrors);
         return toResponse(ErrorCode.INVALID_INPUT, request, fieldErrors);
+    }
+
+    @ExceptionHandler(PessimisticLockingFailureException.class)
+    public ResponseEntity<ApiResponse<Void>> handlePessimisticLockingFailureException(PessimisticLockingFailureException e, HttpServletRequest request) {
+        log.warn("PessimisticLockingFailureException: {} {} {}", request.getMethod(), request.getRequestURI(), e.getMessage());
+        return toResponse(ErrorCode.LOCK_TIMEOUT, request, null);
     }
 
     @ExceptionHandler(NoResourceFoundException.class)

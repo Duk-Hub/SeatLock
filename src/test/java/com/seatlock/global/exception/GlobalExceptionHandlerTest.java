@@ -62,6 +62,16 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    @DisplayName("비관적 락 실패(데드락·락 타임아웃)는 409 공통 포맷으로 변환된다")
+    void pessimisticLockFailure() throws Exception {
+        mockMvc.perform(get("/test/lock-failure"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("LOCK_TIMEOUT"))
+                .andExpect(jsonPath("$.error.message").value(ErrorCode.LOCK_TIMEOUT.getMessage()));
+    }
+
+    @Test
     @DisplayName("예상치 못한 예외는 500과 사전 정의 메시지만 노출한다")
     void unexpectedException() throws Exception {
         mockMvc.perform(get("/test/unexpected"))

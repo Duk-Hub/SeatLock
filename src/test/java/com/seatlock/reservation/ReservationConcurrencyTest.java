@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// 락 도입 전의 깨진 동작(데드락·오버부킹)을 의도적으로 실증하는 재현 테스트 — 결과: docs/concurrency/01-race-reproduction.md
 @IntegrationTest
 class ReservationConcurrencyTest {
 
@@ -44,39 +43,42 @@ class ReservationConcurrencyTest {
     }
 
     @Test
-    @DisplayName("락이 없으면 같은 좌석 동시 예매가 데드락을 일으킨다")
-    void deadlockWithoutLock() throws Exception {
+    @DisplayName("같은 좌석 동시 예매는 데드락 없이 정확히 1건만 성공한다")
+    void exactlyOneSucceedsWithoutDeadlock() throws Exception {
         // given
         Long seatId = anyAvailableSeatId();
 
         // when
         StormResult result = reserveConcurrently(seatId);
 
-        // then — 중복 예매는 FK 공유 락이 우연히 막지만, 동시 진입자 대부분이 409가 아닌 데드락(500) 예외를 받는다.
+        // then — 락 앞에서 직렬화된 나머지 요청 전원이 409로 거절되고, 데드락은 발생하지 않는다.
         int reservedRows = reservationSeatRows(seatId);
-        log.info("[재현] 좌석 1개에 동시 예매 {}건 → 성공 {}건, 좌석충돌(409) {}건, 데드락 {}건, reservation_seat 행 {}개",
+        log.info("[검증] 좌석 1개에 동시 예매 {}건 → 성공 {}건, 좌석충돌(409) {}건, 데드락 {}건, reservation_seat 행 {}개",
                 THREAD_COUNT, result.success(), result.conflict(), result.deadlock(), reservedRows);
 
-        assertThat(result.deadlock()).isGreaterThan(0);
+        assertThat(result.success()).isEqualTo(1);
+        assertThat(result.conflict()).isEqualTo(THREAD_COUNT - 1);
+        assertThat(result.deadlock()).isZero();
+        assertThat(reservedRows).isEqualTo(1);
     }
 
     @Test
-    @DisplayName("FK 제약마저 없으면 같은 좌석이 중복 예매된다 (오버부킹)")
-    void overbookingWithoutFk() throws Exception {
-        // given — FK를 잠시 제거해 코드 자체에는 race condition에서의 정합성 방어가 전혀 없음을 드러내는 실험
+    @DisplayName("FK 제약이 없어도 같은 좌석은 정확히 1건만 예매된다")
+    void noOverbookingWithoutFk() throws Exception {
+        // given — FK를 잠시 제거해 제약의 부수효과 없이 락만으로 정합성이 보장되는지 확인
         Long seatId = anyAvailableSeatId();
         jdbcTemplate.execute("ALTER TABLE reservation_seat DROP FOREIGN KEY fk_reservation_seat_schedule_seat");
         try {
             // when
             StormResult result = reserveConcurrently(seatId);
 
-            // then — 한 좌석에 유효한 예약이 여러 건 = 오버부킹
+            // then
             int reservedRows = reservationSeatRows(seatId);
-            log.info("[재현] FK 제거 후 좌석 1개에 동시 예매 {}건 → 성공 {}건, 좌석충돌(409) {}건, 데드락 {}건, reservation_seat 행 {}개 (오버부킹)",
+            log.info("[검증] FK 제거 후 좌석 1개에 동시 예매 {}건 → 성공 {}건, 좌석충돌(409) {}건, 데드락 {}건, reservation_seat 행 {}개",
                     THREAD_COUNT, result.success(), result.conflict(), result.deadlock(), reservedRows);
 
-            assertThat(result.success()).isGreaterThan(1);
-            assertThat(reservedRows).isGreaterThan(1);
+            assertThat(result.success()).isEqualTo(1);
+            assertThat(reservedRows).isEqualTo(1);
         } finally {
             jdbcTemplate.execute("""
                     ALTER TABLE reservation_seat
