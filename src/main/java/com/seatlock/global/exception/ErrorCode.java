@@ -18,7 +18,12 @@ public enum ErrorCode {
 
     // 공연
     PERFORMANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "공연을 찾을 수 없습니다."),
-    SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "회차를 찾을 수 없습니다.");
+    SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "회차를 찾을 수 없습니다."),
+
+    // 예매
+    SCHEDULE_SEAT_NOT_FOUND(HttpStatus.NOT_FOUND, "좌석을 찾을 수 없습니다."),
+    SCHEDULE_MISMATCH(HttpStatus.BAD_REQUEST, "같은 회차의 좌석만 함께 예매할 수 있습니다."),
+    SEAT_ALREADY_RESERVED(HttpStatus.CONFLICT, "이미 예매된 좌석입니다.");
 
     private final HttpStatus status;
     private final String message;

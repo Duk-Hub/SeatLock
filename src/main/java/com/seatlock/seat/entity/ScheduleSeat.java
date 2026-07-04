@@ -1,5 +1,7 @@
 package com.seatlock.seat.entity;
 
+import com.seatlock.global.exception.BusinessException;
+import com.seatlock.global.exception.ErrorCode;
 import com.seatlock.performance.entity.Schedule;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -40,4 +42,11 @@ public class ScheduleSeat {
     private ScheduleSeatStatus status;
 
     private int price;
+
+    public void reserve() {
+        if (this.status != ScheduleSeatStatus.AVAILABLE) {
+            throw new BusinessException(ErrorCode.SEAT_ALREADY_RESERVED);
+        }
+        this.status = ScheduleSeatStatus.RESERVED;
+    }
 }
