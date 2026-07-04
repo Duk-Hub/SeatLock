@@ -35,8 +35,9 @@ public class ReservationService {
         List<Long> scheduleSeatIds = request.scheduleSeatIds();
         validateNoDuplicate(scheduleSeatIds);
 
-        log.info("예매 시도: memberId={} scheduleSeatIds={}", memberId, scheduleSeatIds);
-        List<ScheduleSeat> scheduleSeats = scheduleSeatRepository.findAllById(scheduleSeatIds);
+        log.info("예매 시도(락 대기 진입): memberId={} scheduleSeatIds={}", memberId, scheduleSeatIds);
+        List<ScheduleSeat> scheduleSeats = scheduleSeatRepository.findAllByIdForUpdate(scheduleSeatIds);
+        log.info("좌석 락 획득: memberId={} scheduleSeatIds={}", memberId, scheduleSeatIds);
         validateAllExist(scheduleSeatIds, scheduleSeats);
         validateSameSchedule(scheduleSeats);
 

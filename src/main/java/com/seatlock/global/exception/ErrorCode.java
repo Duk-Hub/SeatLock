@@ -23,7 +23,10 @@ public enum ErrorCode {
     // 예매
     SCHEDULE_SEAT_NOT_FOUND(HttpStatus.NOT_FOUND, "좌석을 찾을 수 없습니다."),
     SCHEDULE_MISMATCH(HttpStatus.BAD_REQUEST, "같은 회차의 좌석만 함께 예매할 수 있습니다."),
-    SEAT_ALREADY_RESERVED(HttpStatus.CONFLICT, "이미 예매된 좌석입니다.");
+    SEAT_ALREADY_RESERVED(HttpStatus.CONFLICT, "이미 예매된 좌석입니다."),
+
+    // 동시성
+    LOCK_TIMEOUT(HttpStatus.CONFLICT, "동시 요청이 많아 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.");
 
     private final HttpStatus status;
     private final String message;
